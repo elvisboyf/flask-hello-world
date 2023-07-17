@@ -1,2 +1,4 @@
 Flask
 Gunicorn
+sqlite3
+python-binance
