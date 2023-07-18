@@ -27,8 +27,8 @@ def home():
             break
         except Exception:
             print("Estoy teniendo problema con el json")
-    
-    return jsonify(guardado)
+    json_string = json.dumps(guardado)
+    return json_string
         
 @app.route('/trading-signal', methods=['POST'])
 def receive_trading_signal():
