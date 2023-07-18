@@ -21,19 +21,6 @@ def contar_claves_con_valor(diccionario, valor_buscado):
             brinco +=1
     return count
 
-@app.route('/')
-def home():
-    while True:
-        try:
-            with open("datos.json", "r") as archivo:
-                guardado = json.load(archivo)
-            archivo.close()
-            break
-        except Exception:
-            print("Estoy teniendo problema con el json")
-    json_string = json.dumps(guardado)
-    return json_string
-    
 @app.route('/trading-signal', methods=['POST'])
 def receive_trading_signal():
     conn = sqlite3.connect('DBindicadores.db')
@@ -88,7 +75,7 @@ def receive_trading_signal():
         archivo.close()
         
         if posicion == "buy":
-            if float(orders[1]["positionAmt"]) <= 700:  
+            if float(orders[1]["positionAmt"]) <= 700 and round((float(orders[1]["positionAmt"])/3)*-1) >=  float(orders[1]["unRealizedProfit"]):  
                 order_long = client.futures_create_order(
                     symbol=moneda[:moneda.index("usdt")+4].upper(),
                     side='BUY',
@@ -97,19 +84,24 @@ def receive_trading_signal():
                     quantity=cantidad
                 )
         else:
-            if orders[1]["unRealizedProfit"] >= "-1":
+            if float(orders[1]["unRealizedProfit"]) >= -1:
                 order_long = client.futures_create_order(
                     symbol=moneda[:moneda.index("usdt")+4].upper(),
                     side='SELL',
                     positionSide='LONG',
                     type=ORDER_TYPE_MARKET,
-                    quantity=round(float(orden["notional"])*-1,guardado[0][moneda][0][0])
+                    quantity=round(float(orden["notional"]),guardado[0][moneda][0][0])
                 )
-                #guardado[0][moneda]=[[decimales],{"posicion":"nulo","itgscalper":"0","heikin":"0","scalpin":"0","backtestin":"0","ce":"0"}]
-                        
-        
+        guardado[0][moneda]=[[guardado[0][moneda][0][0]],{"posicion":posicion,"itgscalper":"0","heikin":"0","scalpin":"0","backtestin":"0","ce":"0"}]
+        with open("datos.json", "w") as archivo:
+            json.dump(guardado, archivo)
+        archivo.close()
+    
         
     
     response = make_response('Solicitud procesada correctamente', 200)
     return response
 
+if __name__ == '__main__':
+    app.run(host="127.0.0.1", port=80, debug=True)
+    #ngrok http --domain=carefully-striking-snail.ngrok-free.app 80
