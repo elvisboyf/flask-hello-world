@@ -17,7 +17,18 @@ def contar_claves_con_valor(diccionario, valor_buscado):
         if valor == valor_buscado:
             count += 1
     return count
-
+@app.route('/')
+def home():
+    while True:
+        try:
+            with open("datos.json", "r") as archivo:
+                guardado = json.load(archivo)
+            archivo.close()
+            break
+        except Exception:
+            print("Estoy teniendo problema con el json")
+        return jsonify(guardado)
+        
 @app.route('/trading-signal', methods=['POST'])
 def receive_trading_signal():
     while True:
