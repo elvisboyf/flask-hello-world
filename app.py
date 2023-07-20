@@ -80,6 +80,7 @@ def receive_trading_signal():
         cantidad = round(100 / float(orders[0]["markPrice"]),guardado[0][moneda][0][0])
         
         if posicion == "buy":
+            posicion="nulo"
             precioC = float(orders[1]["entryPrice"])-(float(orders[1]["entryPrice"])*0.015)
             print("Precio para comprar: "+str(precioC))
             if abs(float(orders[2]["positionAmt"])) != 0 and float(orders[2]["unRealizedProfit"]) >= 0:
@@ -92,6 +93,7 @@ def receive_trading_signal():
                       quantity=abs(float(orders[2]["positionAmt"]))
                   )
             if  precioC >= float(orders[1]["markPrice"]) or precioC == 0.0:
+                posicion="buy"
                 order_long = client.futures_create_order(
                     symbol=moneda[:moneda.index("usdt")+4].upper(),
                     side='BUY',
@@ -101,6 +103,7 @@ def receive_trading_signal():
                 )
 
         elif posicion == "sell":
+            posicion="nulo"
             precioV = float(orders[2]["entryPrice"])+(float(orders[2]["entryPrice"])*0.015)
             print("Precio para vender: "+str(precioV))
             if abs(float(orders[1]["positionAmt"])) != 0 and float(orders[1]["unRealizedProfit"]) >= 0:
@@ -113,6 +116,7 @@ def receive_trading_signal():
                     quantity=abs(float(orders[1]["positionAmt"]))
                 )
             if  precioV <= float(orders[2]["markPrice"]) or precioV == 0.0:
+                posicion="sell"
                 order_short = client.futures_create_order(
                     symbol=moneda[:moneda.index("usdt")+4].upper(),
                     side='SELL',
@@ -136,6 +140,4 @@ def receive_trading_signal():
     response = make_response('Solicitud procesada correctamente', 200)
     return response
 
-if __name__ == '__main__':
-    app.run(host="127.0.0.1", port=80)
-    #ngrok http --domain=carefully-striking-snail.ngrok-free.app 80
+
