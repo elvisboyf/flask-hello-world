@@ -69,16 +69,22 @@ def receive_trading_signal():
     if cantidad_claves >= 3 and guardado[0][moneda][1]["posicion"] != posicion:
         
         print("OPERAR")
-        orders = client.futures_position_information(symbol=moneda[:moneda.index("usdt")+4].upper())
-        time.sleep(1)
+        while True:
+            try:
+                orders = client.futures_position_information(symbol=moneda[:moneda.index("usdt")+4].upper())
+                break
+            except Exception:
+                time.sleep(2)
+        
+        
         cantidad = round(100 / float(orders[0]["markPrice"]),guardado[0][moneda][0][0])
         
         if posicion == "buy":
             precioC = float(orders[1]["entryPrice"])-(float(orders[1]["entryPrice"])*0.015)
             print("Precio para comprar: "+str(precioC))
-            if abs(float(orders[2]["positionAmt"])) != "0" and float(orders[2]["unRealizedProfit"]) >= 0:
+            if abs(float(orders[2]["positionAmt"])) != 0 and float(orders[2]["unRealizedProfit"]) >= 0:
                 print("CERRAREMOS VENTA")  
-                order_long = client.futures_create_order(
+                close_short = client.futures_create_order(
                       symbol=moneda[:moneda.index("usdt")+4].upper(),
                       side='BUY',
                       positionSide='SHORT',
@@ -97,7 +103,7 @@ def receive_trading_signal():
         elif posicion == "sell":
             precioV = float(orders[2]["entryPrice"])+(float(orders[2]["entryPrice"])*0.015)
             print("Precio para vender: "+str(precioV))
-            if abs(float(orders[1]["positionAmt"])) != "0" and float(orders[1]["unRealizedProfit"]) >= 0:
+            if abs(float(orders[1]["positionAmt"])) != 0 and float(orders[1]["unRealizedProfit"]) >= 0:
                 print("CERRAREMOS COMPRA") 
                 close_long = client.futures_create_order(
                     symbol=moneda[:moneda.index("usdt")+4].upper(),
@@ -130,3 +136,6 @@ def receive_trading_signal():
     response = make_response('Solicitud procesada correctamente', 200)
     return response
 
+if __name__ == '__main__':
+    app.run(host="127.0.0.1", port=80)
+    #ngrok http --domain=carefully-striking-snail.ngrok-free.app 80
