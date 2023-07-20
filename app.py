@@ -27,8 +27,9 @@ def receive_trading_signal():
     cursor = conn.cursor()
     conn.execute('''CREATE TABLE IF NOT EXISTS DBindicadores
                         (id INTEGER PRIMARY KEY AUTOINCREMENT,
-                          indicador TEXT,
-                          senal TEXT)''')
+                         moneda TEXT,
+                         indicador TEXT,
+                         senal TEXT)''')
     senal = str(request.data, "UTF-8").lower()
     print(senal)
     moneda, indicador = senal.strip().split('|')
@@ -43,17 +44,17 @@ def receive_trading_signal():
             if x["symbol"] == moneda[:moneda.index("usdt")+4].upper():
                 decimales = int(x["quantityPrecision"])
                 break
-        guardado[0][moneda]=[[decimales],{"posicion":"nulo","itgscalper":"0","heikin":"0","scalpin":"0","backtestin":"0","ce":"0"}]
+        guardado[0][moneda]=[[decimales],{"posicion":"nulo","trend":"0","itgscalper":"0","heikin":"0","scalpin":"0","backtestin":"0","ce":"0"}]
         
         
     
-    conn.execute("INSERT INTO DBindicadores (indicador, senal) VALUES (?, ?)", (indicador, posicion))
+    conn.execute("INSERT INTO DBindicadores (moneda, indicador, senal) VALUES (?, ?, ?)", (moneda, indicador, posicion))
     
     
     ddb = cursor.execute("SELECT * FROM DBindicadores")
     for row in ddb:
         print(row)
-        guardado[0][moneda][1][row[1]]=row[2]
+        guardado[0][row[1]][1][row[2]]=row[3]
         with open("datos.json", "w") as archivo:
             json.dump(guardado, archivo)
         archivo.close()
@@ -66,16 +67,25 @@ def receive_trading_signal():
     cantidad_claves = contar_claves_con_valor(guardado[0][moneda][1], posicion)
     print(cantidad_claves)
     if cantidad_claves >= 3 and guardado[0][moneda][1]["posicion"] != posicion:
+        
+        print("OPERAR")
         orders = client.futures_position_information(symbol=moneda[:moneda.index("usdt")+4].upper())
-        time.sleep(5)
+        time.sleep(1)
         cantidad = round(100 / float(orders[0]["markPrice"]),guardado[0][moneda][0][0])
-        guardado[0][moneda][1]["posicion"]=posicion
-        with open("datos.json", "w") as archivo:
-            json.dump(guardado, archivo)
-        archivo.close()
         
         if posicion == "buy":
-            if float(orders[1]["positionAmt"]) <= 700 and round((float(orders[1]["positionAmt"])/3)*-1) >=  float(orders[1]["unRealizedProfit"]):  
+            precioC = float(orders[1]["entryPrice"])-(float(orders[1]["entryPrice"])*0.015)
+            print("Precio para comprar: "+str(precioC))
+            if abs(float(orders[2]["positionAmt"])) != "0" and float(orders[2]["unRealizedProfit"]) >= 0:
+                print("CERRAREMOS VENTA")  
+                order_long = client.futures_create_order(
+                      symbol=moneda[:moneda.index("usdt")+4].upper(),
+                      side='BUY',
+                      positionSide='SHORT',
+                      type=ORDER_TYPE_MARKET,
+                      quantity=abs(float(orders[2]["positionAmt"]))
+                  )
+            if  precioC >= float(orders[1]["markPrice"]) or precioC == 0.0:
                 order_long = client.futures_create_order(
                     symbol=moneda[:moneda.index("usdt")+4].upper(),
                     side='BUY',
@@ -83,25 +93,40 @@ def receive_trading_signal():
                     type=ORDER_TYPE_MARKET,
                     quantity=cantidad
                 )
-        else:
-            if float(orders[1]["unRealizedProfit"]) >= -1:
-                order_long = client.futures_create_order(
+
+        elif posicion == "sell":
+            precioV = float(orders[2]["entryPrice"])+(float(orders[2]["entryPrice"])*0.015)
+            print("Precio para vender: "+str(precioV))
+            if abs(float(orders[1]["positionAmt"])) != "0" and float(orders[1]["unRealizedProfit"]) >= 0:
+                print("CERRAREMOS COMPRA") 
+                close_long = client.futures_create_order(
                     symbol=moneda[:moneda.index("usdt")+4].upper(),
                     side='SELL',
                     positionSide='LONG',
                     type=ORDER_TYPE_MARKET,
-                    quantity=round(float(orden["notional"]),guardado[0][moneda][0][0])
+                    quantity=abs(float(orders[1]["positionAmt"]))
                 )
-        guardado[0][moneda]=[[guardado[0][moneda][0][0]],{"posicion":posicion,"itgscalper":"0","heikin":"0","scalpin":"0","backtestin":"0","ce":"0"}]
+            if  precioV <= float(orders[2]["markPrice"]) or precioV == 0.0:
+                order_short = client.futures_create_order(
+                    symbol=moneda[:moneda.index("usdt")+4].upper(),
+                    side='SELL',
+                    positionSide='SHORT',
+                    type=ORDER_TYPE_MARKET,
+                    quantity=cantidad
+                )
+        
+        guardado[0][moneda][1]={"posicion":posicion,"trend":"0","itgscalper":"0","heikin":"0","scalpin":"0","backtestin":"0","ce":"0"}
         with open("datos.json", "w") as archivo:
             json.dump(guardado, archivo)
         archivo.close()
+
+            
+            
+                
+            
     
         
     
     response = make_response('Solicitud procesada correctamente', 200)
     return response
 
-if __name__ == '__main__':
-    app.run(host="127.0.0.1", port=80, debug=True)
-    #ngrok http --domain=carefully-striking-snail.ngrok-free.app 80
