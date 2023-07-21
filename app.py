@@ -116,6 +116,7 @@ def receive_trading_signal():
                           stopPrice=preciotp,
                           quantity=round(abs(float(orders[1]["positionAmt"]))/round(invertido/5))
                       )
+                    time.sleep(2)
 
         elif posicion == "sell":
             posicion="nulo"
@@ -151,6 +152,7 @@ def receive_trading_signal():
                           stopPrice=preciotp,
                           quantity=round(abs(float(orders[2]["positionAmt"]))/round(invertido/5))
                       )
+                    time.sleep(2)
         
         guardado[0][moneda][1]={"posicion":posicion,"trend":"0","itgscalper":"0","heikin":"0","scalpin":"0","backtestin":"0","ce":"0"}
         with open("datos.json", "w") as archivo:
