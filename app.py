@@ -34,11 +34,11 @@ def receive_trading_signal():
     print(senal)
     moneda, indicador = senal.strip().split('|')
     indicador,posicion = indicador.strip().split(":")
-    client = Client("b1m4F6maj9cChCOUEo5gkcGnkgfC9gSjeivju245a51t71GZVYjza0eZHJEd8tsa","AbQ8BWY2WbQXkAJt63binouleSPZFKjQXcvKrBlbThArKq55O2vY1jhhjbTXvLbI")
     
     try:
         guardado[0][moneda]
     except Exception:
+        client = Client("b1m4F6maj9cChCOUEo5gkcGnkgfC9gSjeivju245a51t71GZVYjza0eZHJEd8tsa","AbQ8BWY2WbQXkAJt63binouleSPZFKjQXcvKrBlbThArKq55O2vY1jhhjbTXvLbI")
         monedas = client.futures_exchange_info()
         for x in monedas["symbols"]:
             if x["symbol"] == moneda[:moneda.index("usdt")+4].upper():
@@ -69,6 +69,8 @@ def receive_trading_signal():
     if cantidad_claves >= 3 and guardado[0][moneda][1]["posicion"] != posicion:
         
         print("OPERAR")
+        client = Client("b1m4F6maj9cChCOUEo5gkcGnkgfC9gSjeivju245a51t71GZVYjza0eZHJEd8tsa","AbQ8BWY2WbQXkAJt63binouleSPZFKjQXcvKrBlbThArKq55O2vY1jhhjbTXvLbI")
+    
         while True:
             try:
                 orders = client.futures_position_information(symbol=moneda[:moneda.index("usdt")+4].upper())
