@@ -39,6 +39,7 @@ def receive_trading_signal():
         guardado[0][moneda]
     except Exception:
         client = Client("b1m4F6maj9cChCOUEo5gkcGnkgfC9gSjeivju245a51t71GZVYjza0eZHJEd8tsa","AbQ8BWY2WbQXkAJt63binouleSPZFKjQXcvKrBlbThArKq55O2vY1jhhjbTXvLbI")
+        time.sleep(3)
         monedas = client.futures_exchange_info()
         for x in monedas["symbols"]:
             if x["symbol"] == moneda[:moneda.index("usdt")+4].upper():
