@@ -97,6 +97,10 @@ def receive_trading_signal():
                   )
             if  precioC >= float(orders[1]["markPrice"]) or precioC == 0.0:
                 posicion="buy"
+                guardado[0][moneda][1]={"posicion":posicion,"trend":"0","itgscalper":"0","heikin":"0","scalpin":"0","backtestin":"0","ce":"0"}
+                with open("datos.json", "w") as archivo:
+                    json.dump(guardado, archivo)
+                archivo.close()
                 order_long = client.futures_create_order(
                     symbol=moneda[:moneda.index("usdt")+4].upper(),
                     side='BUY',
@@ -104,7 +108,7 @@ def receive_trading_signal():
                     type=ORDER_TYPE_MARKET,
                     quantity=cantidad
                 )
-                
+                cancelar = client.futures_cancel_all_open_orders(symbol=moneda[:moneda.index("usdt")+4].upper())
                 for i in range(1,round(invertido/5)):
                     porciento = 0.01*i
                     preciotp = round(float(orders[1]["entryPrice"])+float(orders[1]["entryPrice"])*porciento,4)
@@ -134,6 +138,10 @@ def receive_trading_signal():
                 )
             if  precioV <= float(orders[2]["markPrice"]) or precioV == 0.0:
                 posicion="sell"
+                guardado[0][moneda][1]={"posicion":posicion,"trend":"0","itgscalper":"0","heikin":"0","scalpin":"0","backtestin":"0","ce":"0"}
+                with open("datos.json", "w") as archivo:
+                    json.dump(guardado, archivo)
+                archivo.close()
                 order_short = client.futures_create_order(
                     symbol=moneda[:moneda.index("usdt")+4].upper(),
                     side='SELL',
@@ -141,6 +149,8 @@ def receive_trading_signal():
                     type=ORDER_TYPE_MARKET,
                     quantity=cantidad
                 )
+                cancelar = client.futures_cancel_all_open_orders(symbol=moneda[:moneda.index("usdt")+4].upper())
+                
                 for i in range(1,round(invertido/5)):
                     porciento = 0.01*i
                     preciotp = round(float(orders[2]["entryPrice"])-float(orders[2]["entryPrice"])*porciento,4)
@@ -168,3 +178,4 @@ def receive_trading_signal():
     
     response = make_response('Solicitud procesada correctamente', 200)
     return response
+
