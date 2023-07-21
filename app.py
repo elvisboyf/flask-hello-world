@@ -23,6 +23,13 @@ def contar_claves_con_valor(diccionario, valor_buscado):
 
 @app.route('/trading-signal', methods=['POST'])
 def receive_trading_signal():
+    #mambra
+    # key = "b1m4F6maj9cChCOUEo5gkcGnkgfC9gSjeivju245a51t71GZVYjza0eZHJEd8tsa"
+    # priv = "AbQ8BWY2WbQXkAJt63binouleSPZFKjQXcvKrBlbThArKq55O2vY1jhhjbTXvLbI"
+    
+    #mio
+    key= "JiiNHqwuxhhvUfayfHbAaFLkIUDlAMloAlPQHFMFIc7wk8QVskMgq2HdXKam0KZn"
+    priv= "XGRMtw8rsyDSiBsB0AghvY7ewuCFgyybjR63Zv40k5HVpPX117FNCX80n2VqLsjv"
     conn = sqlite3.connect('DBindicadores.db')
     cursor = conn.cursor()
     conn.execute('''CREATE TABLE IF NOT EXISTS DBindicadores
@@ -38,8 +45,7 @@ def receive_trading_signal():
     try:
         guardado[0][moneda]
     except Exception:
-        client = Client("b1m4F6maj9cChCOUEo5gkcGnkgfC9gSjeivju245a51t71GZVYjza0eZHJEd8tsa","AbQ8BWY2WbQXkAJt63binouleSPZFKjQXcvKrBlbThArKq55O2vY1jhhjbTXvLbI")
-        time.sleep(3)
+        client = Client(key,priv)
         monedas = client.futures_exchange_info()
         for x in monedas["symbols"]:
             if x["symbol"] == moneda[:moneda.index("usdt")+4].upper():
@@ -70,7 +76,7 @@ def receive_trading_signal():
     if cantidad_claves >= 3 and guardado[0][moneda][1]["posicion"] != posicion:
         
         print("OPERAR")
-        client = Client("b1m4F6maj9cChCOUEo5gkcGnkgfC9gSjeivju245a51t71GZVYjza0eZHJEd8tsa","AbQ8BWY2WbQXkAJt63binouleSPZFKjQXcvKrBlbThArKq55O2vY1jhhjbTXvLbI")
+        client = Client(key,priv)
     
         while True:
             try:
