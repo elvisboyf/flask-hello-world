@@ -107,7 +107,7 @@ def receive_trading_signal():
                 
                 for i in range(1,round(invertido/5)):
                     porciento = 0.01*i
-                    preciotp = round(float(orders[1]["entryPrice"])-float(orders[1]["entryPrice"])*porciento,4)
+                    preciotp = round(float(orders[1]["entryPrice"])+float(orders[1]["entryPrice"])*porciento,4)
                     close_short = client.futures_create_order(
                           symbol=moneda[:moneda.index("usdt")+4].upper(),
                           side='BUY',
@@ -166,5 +166,3 @@ def receive_trading_signal():
     
     response = make_response('Solicitud procesada correctamente', 200)
     return response
-
-
