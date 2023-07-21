@@ -83,6 +83,7 @@ def receive_trading_signal():
         
         if posicion == "buy":
             posicion="nulo"
+            invertido =round(  abs(float(orders[1]["positionAmt"])  )  * float(orders[1]["entryPrice"])) / float(orders[1]["leverage"])
             precioC = float(orders[1]["entryPrice"])-(float(orders[1]["entryPrice"])*0.006)
             print("Precio para comprar: "+str(precioC))
             if abs(float(orders[2]["positionAmt"])) != 0 and float(orders[2]["unRealizedProfit"]) >= 0:
@@ -103,9 +104,22 @@ def receive_trading_signal():
                     type=ORDER_TYPE_MARKET,
                     quantity=cantidad
                 )
+                
+                for i in range(1,round(invertido/5)):
+                    porciento = 0.01*i
+                    preciotp = round(float(orders[1]["entryPrice"])-float(orders[1]["entryPrice"])*porciento,4)
+                    close_short = client.futures_create_order(
+                          symbol=moneda[:moneda.index("usdt")+4].upper(),
+                          side='BUY',
+                          positionSide='SHORT',
+                          type='TAKE_PROFIT_MARKET',
+                          stopPrice=preciotp,
+                          quantity=round(abs(float(orders[1]["positionAmt"]))/round(invertido/5))
+                      )
 
         elif posicion == "sell":
             posicion="nulo"
+            invertido =round(  abs(float(orders[2]["positionAmt"])  )  * float(orders[2]["entryPrice"])) / float(orders[2]["leverage"])
             precioV = float(orders[2]["entryPrice"])+(float(orders[2]["entryPrice"])*0.006)
             print("Precio para vender: "+str(precioV))
             if abs(float(orders[1]["positionAmt"])) != 0 and float(orders[1]["unRealizedProfit"]) >= 0:
@@ -126,6 +140,17 @@ def receive_trading_signal():
                     type=ORDER_TYPE_MARKET,
                     quantity=cantidad
                 )
+                for i in range(1,round(invertido/5)):
+                    porciento = 0.01*i
+                    preciotp = round(float(orders[2]["entryPrice"])-float(orders[2]["entryPrice"])*porciento,4)
+                    close_short = client.futures_create_order(
+                          symbol=moneda[:moneda.index("usdt")+4].upper(),
+                          side='SELL',
+                          positionSide='LONG',
+                          type='TAKE_PROFIT_MARKET',
+                          stopPrice=preciotp,
+                          quantity=round(abs(float(orders[2]["positionAmt"]))/round(invertido/5))
+                      )
         
         guardado[0][moneda][1]={"posicion":posicion,"trend":"0","itgscalper":"0","heikin":"0","scalpin":"0","backtestin":"0","ce":"0"}
         with open("datos.json", "w") as archivo:
