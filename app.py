@@ -83,7 +83,7 @@ def receive_trading_signal():
         
         if posicion == "buy":
             posicion="nulo"
-            precioC = float(orders[1]["entryPrice"])-(float(orders[1]["entryPrice"])*0.01)
+            precioC = float(orders[1]["entryPrice"])-(float(orders[1]["entryPrice"])*0.006)
             print("Precio para comprar: "+str(precioC))
             if abs(float(orders[2]["positionAmt"])) != 0 and float(orders[2]["unRealizedProfit"]) >= 0:
                 print("CERRAREMOS VENTA")  
@@ -106,7 +106,7 @@ def receive_trading_signal():
 
         elif posicion == "sell":
             posicion="nulo"
-            precioV = float(orders[2]["entryPrice"])+(float(orders[2]["entryPrice"])*0.01)
+            precioV = float(orders[2]["entryPrice"])+(float(orders[2]["entryPrice"])*0.006)
             print("Precio para vender: "+str(precioV))
             if abs(float(orders[1]["positionAmt"])) != 0 and float(orders[1]["unRealizedProfit"]) >= 0:
                 print("CERRAREMOS COMPRA") 
