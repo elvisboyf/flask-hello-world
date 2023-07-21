@@ -45,7 +45,9 @@ def receive_trading_signal():
     try:
         guardado[0][moneda]
     except Exception:
+        time.sleep(2)
         client = Client(key,priv)
+        time.sleep(2)
         monedas = client.futures_exchange_info()
         for x in monedas["symbols"]:
             if x["symbol"] == moneda[:moneda.index("usdt")+4].upper():
@@ -77,7 +79,7 @@ def receive_trading_signal():
         
         print("OPERAR")
         client = Client(key,priv)
-    
+        time.sleep(2)
         while True:
             try:
                 orders = client.futures_position_information(symbol=moneda[:moneda.index("usdt")+4].upper())
