@@ -89,7 +89,7 @@ def receive_trading_signal():
                 time.sleep(2)
         
         
-        cantidad = round(40 / float(orders[0]["markPrice"]),guardado[0][moneda][0][0])
+        cantidad = round(100 / float(orders[0]["markPrice"]),guardado[0][moneda][0][0])
         
         if posicion == "buy":
             posicion="nulo"
