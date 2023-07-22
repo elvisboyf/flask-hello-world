@@ -94,7 +94,7 @@ def receive_trading_signal():
         if posicion == "buy":
             posicion="nulo"
             invertido =round(  abs(float(orders[1]["positionAmt"])  )  * float(orders[1]["entryPrice"])) / float(orders[1]["leverage"])
-            precioC = float(orders[1]["entryPrice"])-(float(orders[1]["entryPrice"])*0.005)
+            precioC = float(orders[1]["entryPrice"])-(float(orders[1]["entryPrice"])*0.006)
             print("Precio para comprar: "+str(precioC))
             #quita el 1==1
             if  precioC >= float(orders[1]["markPrice"]) or precioC == 0.0:
@@ -114,22 +114,22 @@ def receive_trading_signal():
                         
                         orders = client.futures_position_information(symbol="OCEANUSDT")
                         if orders != "":
-                            if invertido >=1:
-                                long_tp = client.futures_create_order(
-                                        symbol=moneda[:moneda.index("usdt")+4].upper(),
-                                        side='SELL',
-                                        positionSide='LONG',
-                                        type='TAKE_PROFIT_MARKET',
-                                        stopPrice=round(float(orders[1]["entryPrice"])+(float(orders[1]["entryPrice"])*0.003),4),
-                                        quantity=round(abs(float(orders[1]["positionAmt"]))),
-                                        closePosition=True
-                                    )
+                            long_tp = client.futures_create_order(
+                                    symbol=moneda[:moneda.index("usdt")+4].upper(),
+                                    side='SELL',
+                                    positionSide='LONG',
+                                    type='TAKE_PROFIT_MARKET',
+                                    stopPrice=round(float(orders[1]["entryPrice"])+(float(orders[1]["entryPrice"])*0.005),4),
+                                    quantity=round(abs(float(orders[1]["positionAmt"]))),
+                                    closePosition=True
+                                )
                             break
+                    time.sleep(2)
 
         elif posicion == "sell":
             posicion="nulo"
             invertido =round(  abs(float(orders[2]["positionAmt"])  )  * float(orders[2]["entryPrice"])) / float(orders[2]["leverage"])
-            precioV = float(orders[2]["entryPrice"])+(float(orders[2]["entryPrice"])*0.005)
+            precioV = float(orders[2]["entryPrice"])+(float(orders[2]["entryPrice"])*0.006)
             print("Precio para vender: "+str(precioV))
             
             #quita el 1==1
@@ -149,21 +149,26 @@ def receive_trading_signal():
                         
                         orders = client.futures_position_information(symbol="OCEANUSDT")
                         if orders != "":
-                            if invertido >=1:
-                                short_tp = client.futures_create_order(
-                                        symbol=moneda[:moneda.index("usdt")+4].upper(),
-                                        side='BUY',
-                                        positionSide='SHORT',
-                                        type='TAKE_PROFIT_MARKET',
-                                        stopPrice=round(float(orders[2]["entryPrice"])-(float(orders[2]["entryPrice"])*0.003),4),
-                                        quantity=round(abs(float(orders[2]["positionAmt"])))
-                                    )
+                            short_tp = client.futures_create_order(
+                                    symbol=moneda[:moneda.index("usdt")+4].upper(),
+                                    side='BUY',
+                                    positionSide='SHORT',
+                                    type='TAKE_PROFIT_MARKET',
+                                    stopPrice=round(float(orders[2]["entryPrice"])-(float(orders[2]["entryPrice"])*0.005),4),
+                                    quantity=round(abs(float(orders[2]["positionAmt"])))
+                                )
                             break
+                    time.sleep(2)
         
         guardado[0][moneda][1]={"posicion":posicion,"trend":"0","itgscalper":"0","heikin":"0","scalpin":"0","backtestin":"0","ce":"0"}
         with open("datos.json", "w") as archivo:
             json.dump(guardado, archivo)
         archivo.close()
+
+            
+            
+                
+            
     
         
     
