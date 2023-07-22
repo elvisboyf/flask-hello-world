@@ -24,12 +24,12 @@ def contar_claves_con_valor(diccionario, valor_buscado):
 @app.route('/trading-signal', methods=['POST'])
 def receive_trading_signal():
     #mambra
-    # key = "b1m4F6maj9cChCOUEo5gkcGnkgfC9gSjeivju245a51t71GZVYjza0eZHJEd8tsa"
-    # priv = "AbQ8BWY2WbQXkAJt63binouleSPZFKjQXcvKrBlbThArKq55O2vY1jhhjbTXvLbI"
+    key = "b1m4F6maj9cChCOUEo5gkcGnkgfC9gSjeivju245a51t71GZVYjza0eZHJEd8tsa"
+    priv = "AbQ8BWY2WbQXkAJt63binouleSPZFKjQXcvKrBlbThArKq55O2vY1jhhjbTXvLbI"
     
     #mio
-    key= "JiiNHqwuxhhvUfayfHbAaFLkIUDlAMloAlPQHFMFIc7wk8QVskMgq2HdXKam0KZn"
-    priv= "XGRMtw8rsyDSiBsB0AghvY7ewuCFgyybjR63Zv40k5HVpPX117FNCX80n2VqLsjv"
+    # key= "JiiNHqwuxhhvUfayfHbAaFLkIUDlAMloAlPQHFMFIc7wk8QVskMgq2HdXKam0KZn"
+    # priv= "XGRMtw8rsyDSiBsB0AghvY7ewuCFgyybjR63Zv40k5HVpPX117FNCX80n2VqLsjv"
     conn = sqlite3.connect('DBindicadores.db')
     cursor = conn.cursor()
     conn.execute('''CREATE TABLE IF NOT EXISTS DBindicadores
@@ -95,22 +95,10 @@ def receive_trading_signal():
             invertido =round(  abs(float(orders[1]["positionAmt"])  )  * float(orders[1]["entryPrice"])) / float(orders[1]["leverage"])
             precioC = float(orders[1]["entryPrice"])-(float(orders[1]["entryPrice"])*0.006)
             print("Precio para comprar: "+str(precioC))
-            if abs(float(orders[2]["positionAmt"])) != 0 and float(orders[2]["unRealizedProfit"]) >= 0:
-                print("CERRAREMOS VENTA")  
-                close_short = client.futures_create_order(
-                      symbol=moneda[:moneda.index("usdt")+4].upper(),
-                      side='BUY',
-                      positionSide='SHORT',
-                      type=ORDER_TYPE_LIMIT,
-                      quantity=abs(float(orders[2]["positionAmt"])),
-                      price=orders[2]["entryPrice"]
-                  )
+            
             if  precioC >= float(orders[1]["markPrice"]) or precioC == 0.0:
                 posicion="buy"
-                guardado[0][moneda][1]={"posicion":posicion,"trend":"0","itgscalper":"0","heikin":"0","scalpin":"0","backtestin":"0","ce":"0"}
-                with open("datos.json", "w") as archivo:
-                    json.dump(guardado, archivo)
-                archivo.close()
+                order_long =""
                 order_long = client.futures_create_order(
                     symbol=moneda[:moneda.index("usdt")+4].upper(),
                     side='BUY',
@@ -118,41 +106,30 @@ def receive_trading_signal():
                     type=ORDER_TYPE_MARKET,
                     quantity=cantidad
                 )
-                cancelar = client.futures_cancel_all_open_orders(symbol=moneda[:moneda.index("usdt")+4].upper())
-                for i in range(1,round(invertido/5)):
-                    porciento = 0.01*i
-                    preciotp = round(float(orders[1]["entryPrice"])+float(orders[1]["entryPrice"])*porciento,4)
-                    close_short = client.futures_create_order(
-                          symbol=moneda[:moneda.index("usdt")+4].upper(),
-                          side='BUY',
-                          positionSide='SHORT',
-                          type='TAKE_PROFIT_MARKET',
-                          stopPrice=preciotp,
-                          quantity=round(abs(float(orders[1]["positionAmt"]))/round(invertido/5))
-                      )
-                    time.sleep(2)
+                time.sleep(2)
+                while True:
+                    if order_long != "":
+                        if invertido >=1:
+                            long_tp = client.futures_create_order(
+                                    symbol=moneda[:moneda.index("usdt")+4].upper(),
+                                    side='SELL',
+                                    positionSide='LONG',
+                                    type='TAKE_PROFIT_MARKET',
+                                    stopPrice=round(float(orders[1]["entryPrice"])+(float(orders[1]["entryPrice"])*0.005),4),
+                                    quantity=round(abs(float(orders[1]["positionAmt"]))),
+                                    closePosition=True
+                                )
+                        break
 
         elif posicion == "sell":
             posicion="nulo"
             invertido =round(  abs(float(orders[2]["positionAmt"])  )  * float(orders[2]["entryPrice"])) / float(orders[2]["leverage"])
             precioV = float(orders[2]["entryPrice"])+(float(orders[2]["entryPrice"])*0.006)
             print("Precio para vender: "+str(precioV))
-            if abs(float(orders[1]["positionAmt"])) != 0 and float(orders[1]["unRealizedProfit"]) >= 0:
-                print("CERRAREMOS COMPRA") 
-                close_long = client.futures_create_order(
-                    symbol=moneda[:moneda.index("usdt")+4].upper(),
-                    side='SELL',
-                    positionSide='LONG',
-                    type=ORDER_TYPE_LIMIT,
-                    quantity=abs(float(orders[1]["positionAmt"])),
-                    price=orders[1]["entryPrice"]
-                )
+            
             if  precioV <= float(orders[2]["markPrice"]) or precioV == 0.0:
+                order_short =""
                 posicion="sell"
-                guardado[0][moneda][1]={"posicion":posicion,"trend":"0","itgscalper":"0","heikin":"0","scalpin":"0","backtestin":"0","ce":"0"}
-                with open("datos.json", "w") as archivo:
-                    json.dump(guardado, archivo)
-                archivo.close()
                 order_short = client.futures_create_order(
                     symbol=moneda[:moneda.index("usdt")+4].upper(),
                     side='SELL',
@@ -160,20 +137,18 @@ def receive_trading_signal():
                     type=ORDER_TYPE_MARKET,
                     quantity=cantidad
                 )
-                cancelar = client.futures_cancel_all_open_orders(symbol=moneda[:moneda.index("usdt")+4].upper())
-                
-                for i in range(1,round(invertido/5)):
-                    porciento = 0.01*i
-                    preciotp = round(float(orders[2]["entryPrice"])-float(orders[2]["entryPrice"])*porciento,4)
-                    close_short = client.futures_create_order(
-                          symbol=moneda[:moneda.index("usdt")+4].upper(),
-                          side='SELL',
-                          positionSide='LONG',
-                          type='TAKE_PROFIT_MARKET',
-                          stopPrice=preciotp,
-                          quantity=round(abs(float(orders[2]["positionAmt"]))/round(invertido/5))
-                      )
-                    time.sleep(2)
+                while True:
+                    if order_short != "":
+                        if invertido >=1:
+                            short_tp = client.futures_create_order(
+                                    symbol=moneda[:moneda.index("usdt")+4].upper(),
+                                    side='BUY',
+                                    positionSide='SHORT',
+                                    type='TAKE_PROFIT_MARKET',
+                                    stopPrice=round(float(orders[2]["entryPrice"])-(float(orders[2]["entryPrice"])*0.005),4),
+                                    quantity=round(abs(float(orders[2]["positionAmt"])))
+                                )
+                        break
         
         guardado[0][moneda][1]={"posicion":posicion,"trend":"0","itgscalper":"0","heikin":"0","scalpin":"0","backtestin":"0","ce":"0"}
         with open("datos.json", "w") as archivo:
