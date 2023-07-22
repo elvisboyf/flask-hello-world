@@ -75,6 +75,7 @@ def receive_trading_signal():
     print(guardado[0][moneda][1])
     cantidad_claves = contar_claves_con_valor(guardado[0][moneda][1], posicion)
     print(cantidad_claves)
+    #pon el 1 a 3
     if cantidad_claves >= 3 and guardado[0][moneda][1]["posicion"] != posicion:
         
         print("OPERAR")
@@ -88,14 +89,14 @@ def receive_trading_signal():
                 time.sleep(2)
         
         
-        cantidad = round(100 / float(orders[0]["markPrice"]),guardado[0][moneda][0][0])
+        cantidad = round(40 / float(orders[0]["markPrice"]),guardado[0][moneda][0][0])
         
         if posicion == "buy":
             posicion="nulo"
             invertido =round(  abs(float(orders[1]["positionAmt"])  )  * float(orders[1]["entryPrice"])) / float(orders[1]["leverage"])
             precioC = float(orders[1]["entryPrice"])-(float(orders[1]["entryPrice"])*0.006)
             print("Precio para comprar: "+str(precioC))
-            
+            #quita el 1==1
             if  precioC >= float(orders[1]["markPrice"]) or precioC == 0.0:
                 posicion="buy"
                 order_long =""
@@ -107,10 +108,12 @@ def receive_trading_signal():
                     quantity=cantidad
                 )
                 time.sleep(2)
+                orders =""
                 while True:
                     if order_long != "":
+                        
                         orders = client.futures_position_information(symbol="OCEANUSDT")
-                        if orders[1]:
+                        if orders != "":
                             if invertido >=1:
                                 long_tp = client.futures_create_order(
                                         symbol=moneda[:moneda.index("usdt")+4].upper(),
@@ -129,7 +132,8 @@ def receive_trading_signal():
             precioV = float(orders[2]["entryPrice"])+(float(orders[2]["entryPrice"])*0.006)
             print("Precio para vender: "+str(precioV))
             
-            if  precioV <= float(orders[2]["markPrice"]) or precioV == 0.0:
+            #quita el 1==1
+            if  precioV <= float(orders[2]["markPrice"]) or precioV == 0.0 :
                 order_short =""
                 posicion="sell"
                 order_short = client.futures_create_order(
@@ -139,10 +143,12 @@ def receive_trading_signal():
                     type=ORDER_TYPE_MARKET,
                     quantity=cantidad
                 )
+                orders =""
                 while True:
                     if order_short != "":
+                        
                         orders = client.futures_position_information(symbol="OCEANUSDT")
-                        if orders[2]:
+                        if orders != "":
                             if invertido >=1:
                                 short_tp = client.futures_create_order(
                                         symbol=moneda[:moneda.index("usdt")+4].upper(),
@@ -168,4 +174,3 @@ def receive_trading_signal():
     
     response = make_response('Solicitud procesada correctamente', 200)
     return response
-
