@@ -101,8 +101,9 @@ def receive_trading_signal():
                       symbol=moneda[:moneda.index("usdt")+4].upper(),
                       side='BUY',
                       positionSide='SHORT',
-                      type=ORDER_TYPE_MARKET,
-                      quantity=abs(float(orders[2]["positionAmt"]))
+                      type=ORDER_TYPE_LIMIT,
+                      quantity=abs(float(orders[2]["positionAmt"])),
+                      price=orders[2]["entryPrice"]
                   )
             if  precioC >= float(orders[1]["markPrice"]) or precioC == 0.0:
                 posicion="buy"
@@ -142,8 +143,9 @@ def receive_trading_signal():
                     symbol=moneda[:moneda.index("usdt")+4].upper(),
                     side='SELL',
                     positionSide='LONG',
-                    type=ORDER_TYPE_MARKET,
-                    quantity=abs(float(orders[1]["positionAmt"]))
+                    type=ORDER_TYPE_LIMIT,
+                    quantity=abs(float(orders[1]["positionAmt"])),
+                    price=orders[1]["entryPrice"]
                 )
             if  precioV <= float(orders[2]["markPrice"]) or precioV == 0.0:
                 posicion="sell"
