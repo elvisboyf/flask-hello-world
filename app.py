@@ -109,17 +109,19 @@ def receive_trading_signal():
                 time.sleep(2)
                 while True:
                     if order_long != "":
-                        if invertido >=1:
-                            long_tp = client.futures_create_order(
-                                    symbol=moneda[:moneda.index("usdt")+4].upper(),
-                                    side='SELL',
-                                    positionSide='LONG',
-                                    type='TAKE_PROFIT_MARKET',
-                                    stopPrice=round(float(orders[1]["entryPrice"])+(float(orders[1]["entryPrice"])*0.005),4),
-                                    quantity=round(abs(float(orders[1]["positionAmt"]))),
-                                    closePosition=True
-                                )
-                        break
+                        orders = client.futures_position_information(symbol="OCEANUSDT")
+                        if orders[1]:
+                            if invertido >=1:
+                                long_tp = client.futures_create_order(
+                                        symbol=moneda[:moneda.index("usdt")+4].upper(),
+                                        side='SELL',
+                                        positionSide='LONG',
+                                        type='TAKE_PROFIT_MARKET',
+                                        stopPrice=round(float(orders[1]["entryPrice"])+(float(orders[1]["entryPrice"])*0.005),4),
+                                        quantity=round(abs(float(orders[1]["positionAmt"]))),
+                                        closePosition=True
+                                    )
+                            break
 
         elif posicion == "sell":
             posicion="nulo"
@@ -139,16 +141,18 @@ def receive_trading_signal():
                 )
                 while True:
                     if order_short != "":
-                        if invertido >=1:
-                            short_tp = client.futures_create_order(
-                                    symbol=moneda[:moneda.index("usdt")+4].upper(),
-                                    side='BUY',
-                                    positionSide='SHORT',
-                                    type='TAKE_PROFIT_MARKET',
-                                    stopPrice=round(float(orders[2]["entryPrice"])-(float(orders[2]["entryPrice"])*0.005),4),
-                                    quantity=round(abs(float(orders[2]["positionAmt"])))
-                                )
-                        break
+                        orders = client.futures_position_information(symbol="OCEANUSDT")
+                        if orders[2]:
+                            if invertido >=1:
+                                short_tp = client.futures_create_order(
+                                        symbol=moneda[:moneda.index("usdt")+4].upper(),
+                                        side='BUY',
+                                        positionSide='SHORT',
+                                        type='TAKE_PROFIT_MARKET',
+                                        stopPrice=round(float(orders[2]["entryPrice"])-(float(orders[2]["entryPrice"])*0.005),4),
+                                        quantity=round(abs(float(orders[2]["positionAmt"])))
+                                    )
+                            break
         
         guardado[0][moneda][1]={"posicion":posicion,"trend":"0","itgscalper":"0","heikin":"0","scalpin":"0","backtestin":"0","ce":"0"}
         with open("datos.json", "w") as archivo:
