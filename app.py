@@ -92,14 +92,13 @@ def receive_trading_signal():
         cantidad = round(100 / float(orders[0]["markPrice"]),guardado[0][moneda][0][0])
         
         if posicion == "buy":
-            posicion="nulo"
+            # posicion="nulo"
             invertido =round(  abs(float(orders[1]["positionAmt"])  )  * float(orders[1]["entryPrice"])) / float(orders[1]["leverage"])
             precioC = float(orders[1]["entryPrice"])-(float(orders[1]["entryPrice"])*0.006)
             print("Precio para comprar: "+str(precioC))
             #quita el 1==1
             if  precioC >= float(orders[1]["markPrice"]) or precioC == 0.0:
                 posicion="buy"
-                order_long =""
                 order_long = client.futures_create_order(
                     symbol=moneda[:moneda.index("usdt")+4].upper(),
                     side='BUY',
@@ -127,14 +126,13 @@ def receive_trading_signal():
                     time.sleep(2)
 
         elif posicion == "sell":
-            posicion="nulo"
+            # posicion="nulo"
             invertido =round(  abs(float(orders[2]["positionAmt"])  )  * float(orders[2]["entryPrice"])) / float(orders[2]["leverage"])
             precioV = float(orders[2]["entryPrice"])+(float(orders[2]["entryPrice"])*0.006)
             print("Precio para vender: "+str(precioV))
             
             #quita el 1==1
             if  precioV <= float(orders[2]["markPrice"]) or precioV == 0.0 :
-                order_short =""
                 posicion="sell"
                 order_short = client.futures_create_order(
                     symbol=moneda[:moneda.index("usdt")+4].upper(),
@@ -174,4 +172,3 @@ def receive_trading_signal():
     
     response = make_response('Solicitud procesada correctamente', 200)
     return response
-
