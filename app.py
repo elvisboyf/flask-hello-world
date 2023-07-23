@@ -95,6 +95,7 @@ def receive_trading_signal():
             # posicion="nulo"
             invertido =round(  abs(float(orders[1]["positionAmt"])  )  * float(orders[1]["entryPrice"])) / float(orders[1]["leverage"])
             precioC = float(orders[1]["entryPrice"])-(float(orders[1]["entryPrice"])*0.006)
+            print('Precio entrada: '+str(orders[1]["entryPrice"]))
             print("Precio para comprar: "+str(precioC))
             #quita el 1==1
             if  precioC >= float(orders[1]["markPrice"]) or precioC == 0.0:
@@ -118,7 +119,7 @@ def receive_trading_signal():
                                     side='SELL',
                                     positionSide='LONG',
                                     type='TAKE_PROFIT_MARKET',
-                                    stopPrice=round(float(orders[1]["entryPrice"])+(float(orders[1]["entryPrice"])*0.005),4),
+                                    stopPrice=round(float(orders[1]["entryPrice"])+(float(orders[1]["entryPrice"])*0.002),4),
                                     quantity=round(abs(float(orders[1]["positionAmt"]))),
                                     closePosition=True
                                 )
@@ -129,6 +130,7 @@ def receive_trading_signal():
             # posicion="nulo"
             invertido =round(  abs(float(orders[2]["positionAmt"])  )  * float(orders[2]["entryPrice"])) / float(orders[2]["leverage"])
             precioV = float(orders[2]["entryPrice"])+(float(orders[2]["entryPrice"])*0.006)
+            print('Precio para vender: '+str(orders[2]["entryPrice"]))
             print("Precio para vender: "+str(precioV))
             
             #quita el 1==1
@@ -152,7 +154,7 @@ def receive_trading_signal():
                                     side='BUY',
                                     positionSide='SHORT',
                                     type='TAKE_PROFIT_MARKET',
-                                    stopPrice=round(float(orders[2]["entryPrice"])-(float(orders[2]["entryPrice"])*0.005),4),
+                                    stopPrice=round(float(orders[2]["entryPrice"])-(float(orders[2]["entryPrice"])*0.002),4),
                                     quantity=round(abs(float(orders[2]["positionAmt"])))
                                 )
                             break
@@ -172,3 +174,8 @@ def receive_trading_signal():
     
     response = make_response('Solicitud procesada correctamente', 200)
     return response
+
+
+if __name__ == '__main__':
+    app.run(host="127.0.0.1", port=80)
+    #ngrok http --domain=carefully-striking-snail.ngrok-free.app 80
